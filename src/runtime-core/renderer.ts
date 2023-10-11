@@ -22,7 +22,9 @@ function processElement(vnode, container) {
 }
 
 function mountElement(vnode: any, container: any) {
-  const el = document.createElement(vnode.type);
+   //包含this.$el实现
+  const el = (vnode.el = document.createElement(vnode.type));
+
   const { children } = vnode;
   if (typeof children === "string") {
     el.textContent = children;
@@ -54,14 +56,16 @@ function mountComponent(vnode, container) {
 
   setupComponent(instance);
 
-  setupRenderEffect(instance, container);
+  setupRenderEffect(instance,vnode, container);
 }
 
-function setupRenderEffect(instance, container) {
+function setupRenderEffect(instance,vnode, container) {
   const {proxy} = instance;
  
-  const subTree = instance.render().call(proxy);
+  const subTree = instance.render.call(proxy);
 
   //vnode——>patch
   patch(subTree, container);
+
+  vnode.el = subTree.el;
 }
