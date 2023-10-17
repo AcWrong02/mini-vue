@@ -6,7 +6,16 @@ export const App = {
     window.self = this;
     return h(
       "div",
-      { id: "root", class: ["red", "head"] },
+      { 
+        id: "root", 
+        class: ["red", "head"],
+        onClick(){
+          console.log("click")
+        },
+        onMousedown(){
+          console.log("mousedown")
+        }
+      },
       // 1.string
        "hi, " + this.msg,
       // 2.Array
