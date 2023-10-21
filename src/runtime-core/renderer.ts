@@ -10,14 +10,29 @@ function patch(vnode, container) {
   //TODO 判断vnode是不是一个element
   //是element那么就应该处理element
   //如何去区分是element类型还是component类型？
-  const {shapeFlag} = vnode
-  //处理ELEMENT类型
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    //去处理组件
-    processComponent(vnode, container);
+  const {type, shapeFlag} = vnode
+
+
+  //Fragment——>只渲染children
+  switch (type) {
+    case "Fragment":
+      processFragment(vnode, container);
+      break;
+  
+    default:
+      //处理ELEMENT类型
+      if (shapeFlag & ShapeFlags.ELEMENT) {
+        processElement(vnode, container);
+      } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        //去处理组件
+        processComponent(vnode, container);
+      }
+      break;
   }
+}
+
+function processFragment(vnode: any, container: any) {
+  mountChlidren(vnode, container);
 }
 
 function processElement(vnode, container) {
@@ -80,3 +95,4 @@ function setupRenderEffect(instance,vnode, container) {
 
   vnode.el = subTree.el;
 }
+
