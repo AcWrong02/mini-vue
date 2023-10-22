@@ -16,11 +16,17 @@ export function provide(key, value) {
   }
 }
 
-export function inject(key) {
+export function inject(key, defaultValue) {
   //取
   const currentInstance: any = getCurrentInstance();
   if (currentInstance) {
     const parentProviders = currentInstance.parent.providers;
-    return parentProviders[key];
+
+    if(key in parentProviders){
+      return parentProviders[key];
+    }else if(defaultValue){
+      if(typeof defaultValue === "function")return defaultValue();
+      return defaultValue
+    }
   }
 }
