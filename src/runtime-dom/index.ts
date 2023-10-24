@@ -22,10 +22,23 @@ export function hostInsert(el, parent){
     parent.append(el);
 }
 
+export function hostRemove(child){
+    const parent = child.parentNode;
+    if(parent){
+        parent.removeChild(child);
+    }
+}
+
+export function setElementText(el, text){
+    el.textContent = text;
+}
+
 const renderer:any = createRenderer({
     createElement,
     hostPatchProp,
-    hostInsert
+    hostInsert,
+    hostRemove,
+    setElementText
 })
 
 export function createApp(...args){

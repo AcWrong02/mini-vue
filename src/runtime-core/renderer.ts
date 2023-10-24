@@ -1,5 +1,4 @@
 import { effect } from "../reactivity/effect";
-import { hostInsert, hostPatchProp } from "../runtime-dom";
 import { EMPTY_OBJ } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
@@ -7,7 +6,13 @@ import { createAppAPI } from "./createApp";
 import { Fragment,Text } from "./vnode";
 
 export function createRenderer(options){
-  const { createElement, patchProp, insert } = options;
+  const { 
+    createElement, 
+    hostPatchProp, 
+    hostInsert,
+    hostRemove,
+    setElementText:hostSetElementText, 
+  } = options;
 
   function render(vnode, container) {
     patch(null, vnode, container, null);
@@ -74,6 +79,30 @@ export function createRenderer(options){
 
     patchProps(el, oldProps, newProps);
     //TODO：处理children
+    patchChildren(n1, n2, el);
+  }
+
+  function patchChildren(n1, n2, container){
+    const prevShapeFlag = n1.shapeFlag;
+    const { shapeFlag } = n2;
+    const c2 = n2.children;
+
+    if(shapeFlag & ShapeFlags.TEXT_CHILDREN){
+      if(prevShapeFlag & ShapeFlags.ARRAY_CHILDREN){
+        // 1. 把老的children清空
+        unmountChildren(n1.children);
+        // 2. 设置新的text
+        hostSetElementText(container, c2)
+      }
+    }
+  }
+
+  function unmountChildren(children){
+    for(let i = 0; i < children.length; i++){
+      const el = children[i].el;
+      // remove
+      hostRemove(el);
+    }
   }
 
   function patchProps(el, oldProps, newProps){
