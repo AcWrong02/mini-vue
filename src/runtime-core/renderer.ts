@@ -1,4 +1,6 @@
 import { effect } from "../reactivity/effect";
+import { hostInsert, hostPatchProp } from "../runtime-dom";
+import { EMPTY_OBJ } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
@@ -64,7 +66,40 @@ export function createRenderer(options){
     console.log("n2:",n2);
 
     //TODO：处理props
+    const oldProps = n1.props || EMPTY_OBJ;
+    const newProps = n2.props || EMPTY_OBJ;
+
+    // 这边还有点疑问
+    const el = (n2.el = n1.el);
+
+    patchProps(el, oldProps, newProps);
     //TODO：处理children
+  }
+
+  function patchProps(el, oldProps, newProps){
+    //优化点：只有在props发生变化的时候才需要进行对比
+    if(oldProps !== newProps){
+      //情况一和情况二：值改变和值变成undefined
+      for(const key in newProps){
+        const prevProp = oldProps[key];
+        const nextProp = newProps[key];
+
+        if(prevProp !== newProps){
+          hostPatchProp(el, key, prevProp, nextProp);
+        }
+      }
+
+      //情况三：属性被删除
+      //fix:做进一步的细节优化
+      if(oldProps !== EMPTY_OBJ){
+        for(const key in oldProps){
+          if(!(key in newProps)){
+            hostPatchProp(el, key, oldProps[key], null)
+          }
+        }
+      }
+    }
+
   }
 
   function mountElement(vnode: any, container: any, parentComponent) {
@@ -91,10 +126,10 @@ export function createRenderer(options){
       // }else{
       //   el.setAttribute(key, val);
       // }
-      patchProp(el, key, val);
+      hostPatchProp(el, key, null, val);
     }
     // container.append(el);
-    insert(el, container);
+    hostInsert(el, container);
   }
 
   function mountChlidren(vnode, container, parentComponent) {
