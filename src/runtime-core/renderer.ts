@@ -119,6 +119,7 @@ export function createRenderer(options){
         hostSetElementText(container, "");
         mountChlidren(c2, container, parentComponent);
       }else{
+        // 情况四:array-->array
         unmountChildren(n1.children);
         mountChlidren(c2, container, parentComponent);
       }
