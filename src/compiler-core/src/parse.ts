@@ -24,6 +24,11 @@ function parseChildren(context){
         }
     }
 
+    // 解析text功能
+    if(!node){
+        node = parseText(context);
+    }
+
     nodes.push(node);
 
     return nodes;
@@ -42,7 +47,7 @@ function parseInterpolation(context){
 
     const rawContentLength = closeIndex - openDelimiter.length;
 
-    const rawContent = context.source.slice(0, rawContentLength); // message
+    const rawContent = parseTextData(context, rawContentLength) // message
 
     const content = rawContent.trim(); //边缘情况，去除插值语法首尾的空格
 
@@ -88,6 +93,25 @@ function parseTag(context:any, type:TagType){
     }
 }
 
+function parseText(context: any){
+    const content = parseTextData(context, context.source.length);
+
+    console.log("解析text的context.source--",context.source);
+
+    return {
+        type:NodeTypes.TEXT,
+        content
+    }
+}
+
+function parseTextData(context:any, length:number){
+    // 1.获取content
+    const content = context.source.slice(0, length);
+    // 2.推进
+    advanceBy(context, length);
+
+    return content;
+}
 
 function advanceBy(context: any, length: number){
     context.source = context.source.slice(length);
